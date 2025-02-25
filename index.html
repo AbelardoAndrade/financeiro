@@ -1,0 +1,349 @@
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de Contas Mensais</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login/Register Container -->
+    <div id="auth-container" class="auth-container">
+        <div class="auth-box">
+            <div class="tabs">
+                <button class="tab-btn active" id="login-tab-btn" data-tab="login-tab">Login</button>
+                <button class="tab-btn" id="register-tab-btn" data-tab="register-tab">Cadastro</button>
+            </div>
+            
+            <div class="tab-content active" id="login-tab">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email:</label>
+                        <input type="email" id="login-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Senha:</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Entrar</button>
+                    </div>
+                    <div class="form-footer">
+                        <a href="#" id="forgot-password">Esqueci minha senha</a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="tab-content" id="register-tab">
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-name">Nome Completo:</label>
+                        <input type="text" id="register-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email:</label>
+                        <input type="email" id="register-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Senha:</label>
+                        <input type="password" id="register-password" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-confirm-password">Confirmar Senha:</label>
+                        <input type="password" id="register-confirm-password" required minlength="6">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Solicitar Cadastro</button>
+                    </div>
+                    <div class="register-info">
+                        <p>Sua solicitação será enviada para aprovação. Você receberá um email quando seu cadastro for aprovado.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Container (initially hidden) -->
+    <div id="app-container" class="app-container" style="display: none;">
+        <header>
+            <div class="header-main">
+                <h1>Controle Financeiro Mensal</h1>
+                <div class="user-menu">
+                    <span id="user-name">Usuário</span>
+                    <button id="btn-logout" class="btn">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                </div>
+            </div>
+            <div class="periodo-selector">
+                <select id="mes-atual">
+                    <option value="1">Janeiro</option>
+                    <option value="2">Fevereiro</option>
+                    <option value="3">Março</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Maio</option>
+                    <option value="6">Junho</option>
+                    <option value="7">Julho</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+                <select id="ano-atual">
+                    <!-- Será preenchido via JavaScript -->
+                </select>
+                <button id="btn-carregar-periodo" class="btn">Carregar</button>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <div class="resumo-cards">
+                <div class="card" id="total-mensal">
+                    <h3>Total Mensal</h3>
+                    <p>R$ <span id="valor-total-mensal">0,00</span></p>
+                </div>
+                <div class="card" id="total-pago">
+                    <h3>Total Pago</h3>
+                    <p>R$ <span id="valor-total-pago">0,00</span></p>
+                </div>
+                <div class="card" id="total-pendente">
+                    <h3>Total Pendente</h3>
+                    <p>R$ <span id="valor-total-pendente">0,00</span></p>
+                </div>
+                <div class="card" id="total-atrasado">
+                    <h3>Total Atrasado</h3>
+                    <p>R$ <span id="valor-total-atrasado">0,00</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-container">
+            <button id="btn-adicionar-despesa" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Adicionar Despesa
+            </button>
+            <button id="btn-arquivar-mes" class="btn">
+                <i class="fas fa-archive"></i> Arquivar Mês
+            </button>
+            <button id="btn-exportar-excel" class="btn">
+                <i class="fas fa-file-excel"></i> Exportar Excel
+            </button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="despesas-tab">Despesas</button>
+            <button class="tab-btn" data-tab="arquivados-tab">Meses Arquivados</button>
+        </div>
+
+        <div class="tab-content active" id="despesas-tab">
+            <div class="filtros">
+                <div class="filtro-grupo">
+                    <label for="filtro-tipo">Tipo:</label>
+                    <select id="filtro-tipo">
+                        <option value="todos">Todos</option>
+                        <option value="mensal">Mensal</option>
+                        <option value="avulso">Avulso</option>
+                    </select>
+                </div>
+                <div class="filtro-grupo">
+                    <label for="filtro-status">Status:</label>
+                    <select id="filtro-status">
+                        <option value="todos">Todos</option>
+                        <option value="pago">Pago</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="atrasado">Atrasado</option>
+                    </select>
+                </div>
+                <div class="filtro-grupo">
+                    <label for="filtro-categoria">Categoria:</label>
+                    <select id="filtro-categoria">
+                        <option value="todas">Todas</option>
+                        <!-- Preenchido via JavaScript -->
+                    </select>
+                </div>
+                <button id="btn-aplicar-filtros" class="btn">Aplicar Filtros</button>
+            </div>
+
+            <div id="tabela-container">
+                <table id="tabela-despesas">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Tipo</th>
+                            <th>Valor (R$)</th>
+                            <th>Vencimento</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="despesas-body">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="arquivados-tab">
+            <table id="tabela-arquivados">
+                <thead>
+                    <tr>
+                        <th>Mês</th>
+                        <th>Ano</th>
+                        <th>Total (R$)</th>
+                        <th>Qtd. Despesas</th>
+                        <th>Data de Arquivamento</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="arquivados-body">
+                    <!-- Preenchido via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Despesa -->
+    <div id="modal-despesa" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-titulo">Adicionar Despesa</h2>
+            <form id="form-despesa">
+                <input type="hidden" id="despesa-id">
+                
+                <div class="form-group tabs">
+                    <button type="button" class="tab-tipo active" data-tipo="mensal">Mensal</button>
+                    <button type="button" class="tab-tipo" data-tipo="avulso">Avulso</button>
+                    <input type="hidden" id="despesa-tipo" value="mensal">
+                </div>
+                
+                <div class="form-group">
+                    <label for="despesa-descricao">Descrição:</label>
+                    <input type="text" id="despesa-descricao" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="despesa-categoria">Categoria:</label>
+                    <select id="despesa-categoria" required>
+                        <option value="">Selecione</option>
+                        <option value="moradia">Moradia</option>
+                        <option value="transporte">Transporte</option>
+                        <option value="alimentacao">Alimentação</option>
+                        <option value="saude">Saúde</option>
+                        <option value="educacao">Educação</option>
+                        <option value="lazer">Lazer</option>
+                        <option value="servicos">Serviços</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="despesa-valor">Valor (R$):</label>
+                    <input type="text" id="despesa-valor" class="valor-input" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="despesa-vencimento">Data de Vencimento:</label>
+                    <input type="date" id="despesa-vencimento" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="despesa-status">Status:</label>
+                    <select id="despesa-status" required>
+                        <option value="pendente">Pendente</option>
+                        <option value="pago">Pago</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="campo-data-pagamento" style="display:none;">
+                    <label for="despesa-data-pagamento">Data de Pagamento:</label>
+                    <input type="date" id="despesa-data-pagamento">
+                </div>
+                
+                <div class="form-group">
+                    <label for="despesa-observacoes">Observações:</label>
+                    <textarea id="despesa-observacoes"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <button type="button" id="btn-cancelar" class="btn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar exclusão -->
+    <div id="modal-confirmar" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Confirmar Ação</h2>
+            <p id="mensagem-confirmar">Tem certeza que deseja realizar esta ação?</p>
+            <div class="form-actions">
+                <button id="btn-confirmar-sim" class="btn btn-primary">Sim</button>
+                <button id="btn-confirmar-nao" class="btn">Não</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Arquivar Mês -->
+    <div id="modal-arquivar" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Arquivar Mês Atual</h2>
+            <p>Tem certeza que deseja arquivar todas as despesas do mês atual?</p>
+            <p>Esta ação irá marcar o mês como arquivado, mas você ainda poderá visualizar os dados posteriormente.</p>
+            <div class="form-actions">
+                <button id="btn-confirmar-arquivar" class="btn btn-primary">Arquivar</button>
+                <button id="btn-cancelar-arquivar" class="btn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Recuperar Senha -->
+    <div id="modal-recuperar-senha" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Recuperar Senha</h2>
+            <p>Informe seu email para receber um link de recuperação de senha:</p>
+            <form id="form-recuperar-senha">
+                <div class="form-group">
+                    <label for="recuperar-email">Email:</label>
+                    <input type="email" id="recuperar-email" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Enviar</button>
+                    <button type="button" id="btn-cancelar-recuperar" class="btn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Status do Cadastro -->
+    <div id="modal-cadastro-status" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Solicitação de Cadastro</h2>
+            <div id="cadastro-status-content">
+                <p>Sua solicitação de cadastro foi enviada com sucesso!</p>
+                <p>Você receberá um email quando seu cadastro for aprovado.</p>
+            </div>
+            <div class="form-actions">
+                <button id="btn-cadastro-status-ok" class="btn btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notificacao" class="notificacao">
+        <p id="mensagem-notificacao"></p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
