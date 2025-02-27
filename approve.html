@@ -37,6 +37,7 @@
         h1 {
             margin-bottom: 20px;
             color: #4a6fa5;
+            font-size: 1.8rem;
         }
         
         p {
@@ -97,6 +98,34 @@
         .error {
             background-color: #f8d7da;
             color: #721c24;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+                width: 100%;
+                margin: 5px 0;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>

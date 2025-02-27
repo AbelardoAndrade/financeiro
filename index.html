@@ -5,6 +5,7 @@
     <title>Sistema de Controle de Contas Mensais</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Login/Register Container -->
@@ -65,199 +66,327 @@
 
     <!-- App Container (initially hidden) -->
     <div id="app-container" class="app-container" style="display: none;">
-        <header>
-            <div class="header-main">
-                <h1>Controle Financeiro Mensal</h1>
-                <div class="user-menu">
-                    <span id="user-name">Usuário</span>
-                    <button id="btn-logout" class="btn">
-                        <i class="fas fa-sign-out-alt"></i> Sair
-                    </button>
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="app-logo">
+                    <i class="fas fa-wallet"></i>
+                    <span>FinanceApp</span>
+                </div>
+                <button id="toggle-sidebar" class="toggle-sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <h3 id="user-name">Usuário</h3>
+                    <span class="user-status">
+                        <i class="fas fa-circle"></i> Online
+                    </span>
                 </div>
             </div>
-            <div class="periodo-selector">
-                <select id="mes-atual">
-                    <option value="1">Janeiro</option>
-                    <option value="2">Fevereiro</option>
-                    <option value="3">Março</option>
-                    <option value="4">Abril</option>
-                    <option value="5">Maio</option>
-                    <option value="6">Junho</option>
-                    <option value="7">Julho</option>
-                    <option value="8">Agosto</option>
-                    <option value="9">Setembro</option>
-                    <option value="10">Outubro</option>
-                    <option value="11">Novembro</option>
-                    <option value="12">Dezembro</option>
-                </select>
-                <select id="ano-atual">
-                    <!-- Será preenchido via JavaScript -->
-                </select>
-                <button id="btn-carregar-periodo" class="btn">Carregar</button>
-            </div>
-        </header>
-
-        <div class="dashboard">
-            <div class="resumo-cards">
-                <div class="card" id="total-mensal">
-                    <h3>Total Mensal</h3>
-                    <p>R$ <span id="valor-total-mensal">0,00</span></p>
-                </div>
-                <div class="card" id="total-pago">
-                    <h3>Total Pago</h3>
-                    <p>R$ <span id="valor-total-pago">0,00</span></p>
-                </div>
-                <div class="card" id="total-pendente">
-                    <h3>Total Pendente</h3>
-                    <p>R$ <span id="valor-total-pendente">0,00</span></p>
-                </div>
-                <div class="card" id="total-atrasado">
-                    <h3>Total Atrasado</h3>
-                    <p>R$ <span id="valor-total-atrasado">0,00</span></p>
-                </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="#" data-target="dashboard-section">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-target="despesas-section">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Despesas</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-target="arquivados-section">
+                            <i class="fas fa-archive"></i>
+                            <span>Arquivados</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="btn-logout" class="btn btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
+                </button>
             </div>
         </div>
 
-        <div class="actions-container">
-            <button id="btn-adicionar-despesa" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Adicionar Despesa
-            </button>
-            <button id="btn-arquivar-mes" class="btn">
-                <i class="fas fa-archive"></i> Arquivar Mês
-            </button>
-            <button id="btn-exportar-excel" class="btn">
-                <i class="fas fa-file-excel"></i> Exportar Excel
-            </button>
-        </div>
+        <div class="main-content">
+            <header class="content-header">
+                <div class="header-actions">
+                    <div class="periodo-selector">
+                        <div class="periodo-wrapper">
+                            <select id="mes-atual">
+                                <option value="1">Janeiro</option>
+                                <option value="2">Fevereiro</option>
+                                <option value="3">Março</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Maio</option>
+                                <option value="6">Junho</option>
+                                <option value="7">Julho</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                            <select id="ano-atual">
+                                <!-- Será preenchido via JavaScript -->
+                            </select>
+                            <button id="btn-carregar-periodo" class="btn btn-icon">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="actions-group">
+                        <button id="btn-adicionar-despesa" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Adicionar Despesa
+                        </button>
+                        <button id="btn-arquivar-mes" class="btn btn-secondary">
+                            <i class="fas fa-archive"></i> Arquivar Mês
+                        </button>
+                        <button id="btn-exportar-excel" class="btn btn-secondary">
+                            <i class="fas fa-file-excel"></i> Exportar Excel
+                        </button>
+                    </div>
+                </div>
+            </header>
 
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="despesas-tab">Despesas</button>
-            <button class="tab-btn" data-tab="arquivados-tab">Meses Arquivados</button>
-        </div>
+            <div id="dashboard-section" class="content-section active">
+                <div class="section-header">
+                    <h2>Dashboard Financeiro</h2>
+                    <p class="periodo-atual">Período: <span id="periodo-display">Carregando...</span></p>
+                </div>
 
-        <div class="tab-content active" id="despesas-tab">
-            <div class="filtros">
-                <div class="filtro-grupo">
-                    <label for="filtro-tipo">Tipo:</label>
-                    <select id="filtro-tipo">
-                        <option value="todos">Todos</option>
-                        <option value="mensal">Mensal</option>
-                        <option value="avulso">Avulso</option>
-                    </select>
+                <div class="dashboard">
+                    <div class="resumo-cards">
+                        <div class="card" id="total-mensal">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Total Mensal</h3>
+                                <p>R$ <span id="valor-total-mensal">0,00</span></p>
+                            </div>
+                        </div>
+                        <div class="card" id="total-pago">
+                            <div class="card-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Total Pago</h3>
+                                <p>R$ <span id="valor-total-pago">0,00</span></p>
+                            </div>
+                        </div>
+                        <div class="card" id="total-pendente">
+                            <div class="card-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Total Pendente</h3>
+                                <p>R$ <span id="valor-total-pendente">0,00</span></p>
+                            </div>
+                        </div>
+                        <div class="card" id="total-atrasado">
+                            <div class="card-icon">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Total Atrasado</h3>
+                                <p>R$ <span id="valor-total-atrasado">0,00</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-charts">
+                        <div class="chart-card">
+                            <h3>Despesas por Categoria</h3>
+                            <div id="categoria-chart" class="chart-container">
+                                <svg id="categoria-donut" width="100%" height="250"></svg>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Status dos Pagamentos</h3>
+                            <div id="status-chart" class="chart-container">
+                                <svg id="status-donut" width="100%" height="250"></svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="filtro-grupo">
-                    <label for="filtro-status">Status:</label>
-                    <select id="filtro-status">
-                        <option value="todos">Todos</option>
-                        <option value="pago">Pago</option>
-                        <option value="pendente">Pendente</option>
-                        <option value="atrasado">Atrasado</option>
-                    </select>
-                </div>
-                <div class="filtro-grupo">
-                    <label for="filtro-categoria">Categoria:</label>
-                    <select id="filtro-categoria">
-                        <option value="todas">Todas</option>
-                        <!-- Preenchido via JavaScript -->
-                    </select>
-                </div>
-                <button id="btn-aplicar-filtros" class="btn">Aplicar Filtros</button>
             </div>
 
-            <div id="tabela-container">
-                <table id="tabela-despesas">
-                    <thead>
-                        <tr>
-                            <th>Descrição</th>
-                            <th>Categoria</th>
-                            <th>Tipo</th>
-                            <th>Valor (R$)</th>
-                            <th>Vencimento</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="despesas-body">
-                        <!-- Preenchido via JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            <div id="despesas-section" class="content-section">
+                <div class="section-header">
+                    <h2>Despesas</h2>
+                    <div class="filter-toggle">
+                        <button id="toggle-filtros" class="btn btn-secondary">
+                            <i class="fas fa-filter"></i> Filtros
+                        </button>
+                    </div>
+                </div>
 
-        <div class="tab-content" id="arquivados-tab">
-            <table id="tabela-arquivados">
-                <thead>
-                    <tr>
-                        <th>Mês</th>
-                        <th>Ano</th>
-                        <th>Total (R$)</th>
-                        <th>Qtd. Despesas</th>
-                        <th>Data de Arquivamento</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="arquivados-body">
-                    <!-- Preenchido via JavaScript -->
-                </tbody>
-            </table>
+                <div class="filtros" id="filtros-container" style="display: none;">
+                    <div class="filtro-grupo">
+                        <label for="filtro-tipo">Tipo:</label>
+                        <select id="filtro-tipo">
+                            <option value="todos">Todos</option>
+                            <option value="mensal">Mensal</option>
+                            <option value="avulso">Avulso</option>
+                        </select>
+                    </div>
+                    <div class="filtro-grupo">
+                        <label for="filtro-status">Status:</label>
+                        <select id="filtro-status">
+                            <option value="todos">Todos</option>
+                            <option value="pago">Pago</option>
+                            <option value="pendente">Pendente</option>
+                            <option value="atrasado">Atrasado</option>
+                        </select>
+                    </div>
+                    <div class="filtro-grupo">
+                        <label for="filtro-categoria">Categoria:</label>
+                        <select id="filtro-categoria">
+                            <option value="todas">Todas</option>
+                            <!-- Preenchido via JavaScript -->
+                        </select>
+                    </div>
+                    <button id="btn-aplicar-filtros" class="btn btn-primary">Aplicar Filtros</button>
+                </div>
+
+                <div id="tabela-container" class="table-responsive">
+                    <table id="tabela-despesas" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Tipo</th>
+                                <th>Valor (R$)</th>
+                                <th>Vencimento</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="despesas-body">
+                            <!-- Preenchido via JavaScript -->
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <div class="empty-state-container">
+                                        <i class="fas fa-search"></i>
+                                        <p>Carregando despesas...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="arquivados-section" class="content-section">
+                <div class="section-header">
+                    <h2>Meses Arquivados</h2>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="tabela-arquivados" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mês</th>
+                                <th>Ano</th>
+                                <th>Total (R$)</th>
+                                <th>Qtd. Despesas</th>
+                                <th>Data de Arquivamento</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="arquivados-body">
+                            <tr>
+                                <td colspan="6" class="empty-state">
+                                    <div class="empty-state-container">
+                                        <i class="fas fa-archive"></i>
+                                        <p>Carregando meses arquivados...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Modal Adicionar Despesa -->
     <div id="modal-despesa" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="modal-titulo">Adicionar Despesa</h2>
+            <div class="modal-header">
+                <h2 id="modal-titulo">Adicionar Despesa</h2>
+                <span class="close">&times;</span>
+            </div>
             <form id="form-despesa">
                 <input type="hidden" id="despesa-id">
                 
-                <div class="form-group tabs">
-                    <button type="button" class="tab-tipo active" data-tipo="mensal">Mensal</button>
-                    <button type="button" class="tab-tipo" data-tipo="avulso">Avulso</button>
+                <div class="form-group tipo-tabs">
+                    <button type="button" class="tab-tipo active" data-tipo="mensal">
+                        <i class="fas fa-calendar-alt"></i> Mensal
+                    </button>
+                    <button type="button" class="tab-tipo" data-tipo="avulso">
+                        <i class="fas fa-receipt"></i> Avulso
+                    </button>
                     <input type="hidden" id="despesa-tipo" value="mensal">
                 </div>
                 
-                <div class="form-group">
-                    <label for="despesa-descricao">Descrição:</label>
-                    <input type="text" id="despesa-descricao" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="despesa-descricao">Descrição:</label>
+                        <input type="text" id="despesa-descricao" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="despesa-categoria">Categoria:</label>
+                        <select id="despesa-categoria" required>
+                            <option value="">Selecione</option>
+                            <option value="moradia">Moradia</option>
+                            <option value="transporte">Transporte</option>
+                            <option value="alimentacao">Alimentação</option>
+                            <option value="saude">Saúde</option>
+                            <option value="educacao">Educação</option>
+                            <option value="lazer">Lazer</option>
+                            <option value="servicos">Serviços</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="despesa-categoria">Categoria:</label>
-                    <select id="despesa-categoria" required>
-                        <option value="">Selecione</option>
-                        <option value="moradia">Moradia</option>
-                        <option value="transporte">Transporte</option>
-                        <option value="alimentacao">Alimentação</option>
-                        <option value="saude">Saúde</option>
-                        <option value="educacao">Educação</option>
-                        <option value="lazer">Lazer</option>
-                        <option value="servicos">Serviços</option>
-                        <option value="outros">Outros</option>
-                    </select>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="despesa-valor">Valor (R$):</label>
+                        <input type="text" id="despesa-valor" class="valor-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="despesa-vencimento">Data de Vencimento:</label>
+                        <input type="date" id="despesa-vencimento" required>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="despesa-valor">Valor (R$):</label>
-                    <input type="text" id="despesa-valor" class="valor-input" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="despesa-vencimento">Data de Vencimento:</label>
-                    <input type="date" id="despesa-vencimento" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="despesa-status">Status:</label>
-                    <select id="despesa-status" required>
-                        <option value="pendente">Pendente</option>
-                        <option value="pago">Pago</option>
-                    </select>
-                </div>
-                
-                <div class="form-group" id="campo-data-pagamento" style="display:none;">
-                    <label for="despesa-data-pagamento">Data de Pagamento:</label>
-                    <input type="date" id="despesa-data-pagamento">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="despesa-status">Status:</label>
+                        <select id="despesa-status" required>
+                            <option value="pendente">Pendente</option>
+                            <option value="pago">Pago</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="campo-data-pagamento" style="display:none;">
+                        <label for="despesa-data-pagamento">Data de Pagamento:</label>
+                        <input type="date" id="despesa-data-pagamento">
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -266,8 +395,8 @@
                 </div>
                 
                 <div class="form-actions">
+                    <button type="button" id="btn-cancelar" class="btn btn-secondary">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Salvar</button>
-                    <button type="button" id="btn-cancelar" class="btn">Cancelar</button>
                 </div>
             </form>
         </div>
@@ -276,12 +405,17 @@
     <!-- Modal Confirmar exclusão -->
     <div id="modal-confirmar" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Confirmar Ação</h2>
+            <div class="modal-header">
+                <h2>Confirmar Ação</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-icon">
+                <i class="fas fa-question-circle"></i>
+            </div>
             <p id="mensagem-confirmar">Tem certeza que deseja realizar esta ação?</p>
             <div class="form-actions">
+                <button id="btn-confirmar-nao" class="btn btn-secondary">Não</button>
                 <button id="btn-confirmar-sim" class="btn btn-primary">Sim</button>
-                <button id="btn-confirmar-nao" class="btn">Não</button>
             </div>
         </div>
     </div>
@@ -289,13 +423,18 @@
     <!-- Modal Arquivar Mês -->
     <div id="modal-arquivar" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Arquivar Mês Atual</h2>
+            <div class="modal-header">
+                <h2>Arquivar Mês Atual</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-icon">
+                <i class="fas fa-archive"></i>
+            </div>
             <p>Tem certeza que deseja arquivar todas as despesas do mês atual?</p>
             <p>Esta ação irá marcar o mês como arquivado, mas você ainda poderá visualizar os dados posteriormente.</p>
             <div class="form-actions">
+                <button id="btn-cancelar-arquivar" class="btn btn-secondary">Cancelar</button>
                 <button id="btn-confirmar-arquivar" class="btn btn-primary">Arquivar</button>
-                <button id="btn-cancelar-arquivar" class="btn">Cancelar</button>
             </div>
         </div>
     </div>
@@ -303,8 +442,13 @@
     <!-- Modal Recuperar Senha -->
     <div id="modal-recuperar-senha" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Recuperar Senha</h2>
+            <div class="modal-header">
+                <h2>Recuperar Senha</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-icon">
+                <i class="fas fa-key"></i>
+            </div>
             <p>Informe seu email para receber um link de recuperação de senha:</p>
             <form id="form-recuperar-senha">
                 <div class="form-group">
@@ -312,8 +456,8 @@
                     <input type="email" id="recuperar-email" required>
                 </div>
                 <div class="form-actions">
+                    <button type="button" id="btn-cancelar-recuperar" class="btn btn-secondary">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Enviar</button>
-                    <button type="button" id="btn-cancelar-recuperar" class="btn">Cancelar</button>
                 </div>
             </form>
         </div>
@@ -322,8 +466,13 @@
     <!-- Modal de Status do Cadastro -->
     <div id="modal-cadastro-status" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Solicitação de Cadastro</h2>
+            <div class="modal-header">
+                <h2>Solicitação de Cadastro</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-icon">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
             <div id="cadastro-status-content">
                 <p>Sua solicitação de cadastro foi enviada com sucesso!</p>
                 <p>Você receberá um email quando seu cadastro for aprovado.</p>
@@ -335,15 +484,22 @@
     </div>
 
     <div id="notificacao" class="notificacao">
-        <p id="mensagem-notificacao"></p>
+        <div class="notificacao-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="notificacao-content">
+            <p id="mensagem-notificacao"></p>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/database.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/charts.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
