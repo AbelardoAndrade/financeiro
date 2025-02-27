@@ -27,12 +27,27 @@
 }
 
 body {
-    background-color: #f5f7fa;
+    background-color: #f5f7fa50;
     color: var(--text-color);
     line-height: 1.6;
     min-height: 100vh;
 }
+.auth-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.logo img {
+    width: 10rem;
+    border-radius: 45px;
+   
+}
 
+.title {
+    padding: 1rem;
+}
 /* === AUTH SECTION === */
 .auth-container {
     width: 100%;
@@ -40,15 +55,15 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, rgba(67,97,238,0.95) 0%, rgba(76,201,240,0.95) 100%),
-                url('https://source.unsplash.com/random/1920x1080/?finance') center/cover no-repeat;
+    background: linear-gradient(135deg, rgba(67, 98, 238, 0.493) 0%, rgba(76, 202, 240, 0.466) 100%),
+                url('https://img.freepik.com/fotos-gratis/empresarios-que-trabalham-em-financas-e-contabilidade-analisar-financas_74952-1411.jpg?t=st=1740674232~exp=1740677832~hmac=9b3e0fecdca72caba67526ab3b9a0926eb05814dc333970b6871048c214af865&w=740') center/cover no-repeat;
     padding: 20px;
 }
 
 .auth-box {
     width: 100%;
     max-width: 420px;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 0.233);
     backdrop-filter: blur(10px);
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
@@ -70,7 +85,7 @@ body {
 
 .auth-box .tabs {
     margin: -35px -35px 25px;
-    background-color: rgba(248, 249, 250, 0.9);
+    background-color: rgba(255, 255, 255, 0.76);
     border-bottom: 1px solid var(--border-color);
     padding: 0;
     display: flex;
@@ -94,7 +109,7 @@ body {
 .auth-box .tab-btn.active {
     color: var(--primary-color);
     border-bottom-color: var(--primary-color);
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.452);
 }
 
 .auth-box .tab-btn:hover:not(.active) {
@@ -129,13 +144,13 @@ body {
     border-radius: 8px;
     font-size: 15px;
     transition: all 0.3s ease;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.452);
 }
 
 .auth-box .form-group input:focus {
     border-color: var(--primary-color);
     outline: none;
-    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+    box-shadow: 0 0 0 4px rgba(67, 98, 238, 0.418);
 }
 
 .auth-box .btn-primary {
@@ -156,7 +171,7 @@ body {
 
 .auth-box .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+    box-shadow: 0 5px 15px rgba(67, 98, 238, 0.233);
     background-color: var(--primary-dark);
 }
 
@@ -183,7 +198,7 @@ body {
     font-size: 14px;
     color: var(--text-muted);
     text-align: center;
-    background-color: rgba(248, 249, 250, 0.9);
+    background-color: rgba(248, 249, 250, 0.541);
     padding: 15px;
     border-radius: 8px;
     border-left: 4px solid var(--primary-color);
@@ -206,6 +221,8 @@ body {
     height: 100vh;
     width: 100%;
     overflow-x: hidden;
+    padding: 0.5rem;
+    margin-top: 1.5rem;
 }
 
 .sidebar {
@@ -1277,4 +1294,11 @@ select:focus, input:focus, textarea:focus {
         font-size: 13px;
         padding: 12px;
     }
+}
+
+footer {
+    text-align: center;
+    background-color: rgba(30, 202, 255, 0.247);
+    font-weight: lighter;
+    font-size: small;
 }
