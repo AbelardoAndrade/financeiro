@@ -2,6 +2,7 @@
 let mesAtual;
 let anoAtual;
 let despesasAtuais = [];
+let sidebarCollapsed = false;
 
 // Elementos DOM
 const mesSelect = document.getElementById('mes-atual');
@@ -10,7 +11,6 @@ const btnCarregarPeriodo = document.getElementById('btn-carregar-periodo');
 const btnAdicionarDespesa = document.getElementById('btn-adicionar-despesa');
 const btnArquivarMes = document.getElementById('btn-arquivar-mes');
 const btnExportarExcel = document.getElementById('btn-exportar-excel');
-const tabButtons = document.querySelectorAll('.tab-btn');
 const formDespesa = document.getElementById('form-despesa');
 const filtroTipo = document.getElementById('filtro-tipo');
 const filtroStatus = document.getElementById('filtro-status');
@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Configura todos os event listeners
     configurarEventListeners();
+    
+    // Adiciona categorias ao filtro
+    preencherCategoriasFiltro();
 });
 
 // Preenche o select de anos (10 anos para trás e 5 para frente)
@@ -53,8 +56,80 @@ function preencherSelectAnos() {
     }
 }
 
+// Preenche o select de categorias no filtro
+function preencherCategoriasFiltro() {
+    const categorias = [
+        {value: 'moradia', text: 'Moradia'},
+        {value: 'transporte', text: 'Transporte'},
+        {value: 'alimentacao', text: 'Alimentação'},
+        {value: 'saude', text: 'Saúde'},
+        {value: 'educacao', text: 'Educação'},
+        {value: 'lazer', text: 'Lazer'},
+        {value: 'servicos', text: 'Serviços'},
+        {value: 'outros', text: 'Outros'}
+    ];
+    
+    // Clear existing options first
+    const defaultOption = filtroCategoria.querySelector('option');
+    filtroCategoria.innerHTML = '';
+    filtroCategoria.appendChild(defaultOption);
+    
+    categorias.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.value;
+        option.textContent = cat.text;
+        filtroCategoria.appendChild(option);
+    });
+}
+
 // Configura os event listeners
 function configurarEventListeners() {
+    // Toggle sidebar
+    document.getElementById('toggle-sidebar').addEventListener('click', function() {
+        document.body.classList.toggle('sidebar-collapsed');
+        sidebarCollapsed = !sidebarCollapsed;
+        
+        // On mobile, toggle sidebar directly
+        if (window.innerWidth <= 768) {
+            document.querySelector('.sidebar').classList.toggle('active');
+        }
+    });
+    
+    // Sidebar navigation
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all links
+            document.querySelectorAll('.sidebar-nav li').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to clicked link's parent
+            this.parentNode.classList.add('active');
+            
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show target section
+            const targetId = this.getAttribute('data-target');
+            document.getElementById(targetId).classList.add('active');
+            
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) {
+                document.querySelector('.sidebar').classList.remove('active');
+            }
+        });
+    });
+    
+    // Toggle filtros
+    document.getElementById('toggle-filtros').addEventListener('click', function() {
+        const filtrosContainer = document.getElementById('filtros-container');
+        filtrosContainer.style.display = filtrosContainer.style.display === 'none' ? 'flex' : 'none';
+    });
+    
     // Botões principais
     btnCarregarPeriodo.addEventListener('click', () => {
         const mesSelec = parseInt(mesSelect.value);
@@ -80,22 +155,6 @@ function configurarEventListeners() {
     
     document.getElementById('btn-cancelar-arquivar').addEventListener('click', () => {
         modalArquivar.style.display = 'none';
-    });
-    
-    // Tabs
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove a classe active de todos os botões e conteúdos
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // Adiciona a classe active ao botão clicado e ao conteúdo correspondente
-            button.classList.add('active');
-            const tabId = button.getAttribute('data-tab');
-            document.getElementById(tabId).classList.add('active');
-        });
     });
     
     // Modais
@@ -168,16 +227,33 @@ function carregarDadosPeriodo(mes, ano) {
     anoAtual = ano;
     
     // Atualiza a interface
-    document.getElementById('despesas-body').innerHTML = '';
+    document.getElementById('despesas-body').innerHTML = `
+        <tr>
+            <td colspan="7" class="empty-state">
+                <div class="empty-state-container">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Carregando despesas...</p>
+                </div>
+            </td>
+        </tr>
+    `;
+    
+    // Atualiza o título do período
+    document.getElementById('periodo-display').textContent = `${obterNomeMes(mes)} de ${ano}`;
     
     // Carrega as despesas
-    despesasAtuais = obterDespesasPorPeriodo(mes, ano);
-    renderizarDespesas(despesasAtuais);
-    
-    // Atualiza o dashboard
-    atualizarDashboard();
-    
-    mostrarNotificacao(`Dados de ${obterNomeMes(mes)} de ${ano} carregados com sucesso.`);
+    setTimeout(() => {
+        despesasAtuais = obterDespesasPorPeriodo(mes, ano);
+        renderizarDespesas(despesasAtuais);
+        
+        // Atualiza o dashboard
+        atualizarDashboard();
+        
+        // Atualiza os gráficos
+        updateDashboardCharts(despesasAtuais);
+        
+        mostrarNotificacao(`Dados de ${obterNomeMes(mes)} de ${ano} carregados com sucesso.`);
+    }, 300); // Pequeno delay para efeito visual
 }
 
 // Renderiza as despesas na tabela
@@ -189,7 +265,10 @@ function renderizarDespesas(despesas) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td colspan="7" class="empty-state">
-                Nenhuma despesa encontrada para este período.
+                <div class="empty-state-container">
+                    <i class="fas fa-search"></i>
+                    <p>Nenhuma despesa encontrada para este período.</p>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
@@ -208,6 +287,7 @@ function renderizarDespesas(despesas) {
             <td>${despesa.categoria.charAt(0).toUpperCase() + despesa.categoria.slice(1)}</td>
             <td>
                 <span class="tag tag-${despesa.tipo}">
+                    <i class="fas fa-${despesa.tipo === 'mensal' ? 'calendar-alt' : 'receipt'}"></i>
                     ${despesa.tipo === 'mensal' ? 'Mensal' : 'Avulso'}
                 </span>
             </td>
@@ -215,6 +295,7 @@ function renderizarDespesas(despesas) {
             <td>${formatarData(despesa.data_vencimento)}</td>
             <td>
                 <span class="status status-${status}">
+                    <i class="fas fa-${status === 'pago' ? 'check-circle' : (status === 'atrasado' ? 'exclamation-circle' : 'clock')}"></i>
                     ${status.charAt(0).toUpperCase() + status.slice(1)}
                 </span>
             </td>
@@ -249,6 +330,9 @@ function adicionarEventosAcoes() {
             document.getElementById('mensagem-confirmar').textContent = 
                 "Tem certeza que deseja marcar esta despesa como paga hoje?";
             
+            document.getElementById('modal-confirmar').querySelector('.modal-icon i').className = 'fas fa-check-circle';
+            document.getElementById('modal-confirmar').querySelector('.modal-icon i').style.color = 'var(--success-color)';
+            
             document.getElementById('btn-confirmar-sim').onclick = function() {
                 const hoje = new Date().toISOString().split('T')[0];
                 if (marcarComoPaga(id, hoje)) {
@@ -281,6 +365,9 @@ function adicionarEventosAcoes() {
             
             document.getElementById('mensagem-confirmar').textContent = 
                 "Tem certeza que deseja excluir esta despesa? Esta ação não pode ser desfeita.";
+            
+            document.getElementById('modal-confirmar').querySelector('.modal-icon i').className = 'fas fa-trash';
+            document.getElementById('modal-confirmar').querySelector('.modal-icon i').style.color = 'var(--danger-color)';
             
             document.getElementById('btn-confirmar-sim').onclick = function() {
                 if (excluirDespesa(id)) {
@@ -449,47 +536,68 @@ function atualizarDashboard() {
 
 // Carrega os meses arquivados
 function carregarMesesArquivados() {
-    const mesesArquivados = obterMesesArquivados();
-    const tbody = document.getElementById('arquivados-body');
-    tbody.innerHTML = '';
-    
-    if (mesesArquivados.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
+    document.getElementById('arquivados-body').innerHTML = `
+        <tr>
             <td colspan="6" class="empty-state">
-                Nenhum mês arquivado encontrado.
+                <div class="empty-state-container">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Carregando meses arquivados...</p>
+                </div>
             </td>
-        `;
-        tbody.appendChild(tr);
-        return;
-    }
+        </tr>
+    `;
     
-    mesesArquivados.forEach(mes => {
-        const tr = document.createElement('tr');
+    setTimeout(() => {
+        const mesesArquivados = obterMesesArquivados();
+        const tbody = document.getElementById('arquivados-body');
+        tbody.innerHTML = '';
         
-        tr.innerHTML = `
-            <td>${obterNomeMes(mes.mes)}</td>
-            <td>${mes.ano}</td>
-            <td>${formatarMoeda(parseFloat(mes.total))}</td>
-            <td>${mes.quantidade_despesas}</td>
-            <td>${formatarData(mes.data_arquivamento)}</td>
-            <td class="acoes">
-                <button class="btn-acao btn-restaurar" data-mes="${mes.mes}" data-ano="${mes.ano}" title="Restaurar">
-                    <i class="fas fa-undo"></i>
-                </button>
-                <button class="btn-acao btn-ver" data-mes="${mes.mes}" data-ano="${mes.ano}" title="Ver Detalhes">
-                    <i class="fas fa-eye"></i>
-                </button>
-                <button class="btn-acao btn-exportar" data-mes="${mes.mes}" data-ano="${mes.ano}" title="Exportar">
-                    <i class="fas fa-file-export"></i>
-                </button>
-            </td>
-        `;
+        if (mesesArquivados.length === 0) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td colspan="6" class="empty-state">
+                    <div class="empty-state-container">
+                        <i class="fas fa-archive"></i>
+                        <p>Nenhum mês arquivado encontrado.</p>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            return;
+        }
         
-        tbody.appendChild(tr);
-    });
-    
-    // Adiciona event listeners aos botões de ação
+        mesesArquivados.forEach(mes => {
+            const tr = document.createElement('tr');
+            
+            tr.innerHTML = `
+                <td>${obterNomeMes(mes.mes)}</td>
+                <td>${mes.ano}</td>
+                <td>${formatarMoeda(parseFloat(mes.total))}</td>
+                <td>${mes.quantidade_despesas}</td>
+                <td>${formatarData(mes.data_arquivamento)}</td>
+                <td class="acoes">
+                    <button class="btn-acao btn-restaurar" data-mes="${mes.mes}" data-ano="${mes.ano}" title="Restaurar">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button class="btn-acao btn-ver" data-mes="${mes.mes}" data-ano="${mes.ano}" title="Ver Detalhes">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-acao btn-exportar" data-mes="${mes.mes}" data-ano="${mes.ano}" title="Exportar">
+                        <i class="fas fa-file-export"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(tr);
+        });
+        
+        // Adiciona event listeners aos botões de ação
+        adicionarEventosArquivados();
+    }, 300);
+}
+
+// Adiciona eventos aos botões da tabela de arquivados
+function adicionarEventosArquivados() {
     document.querySelectorAll('.btn-restaurar').forEach(btn => {
         btn.addEventListener('click', function() {
             const mes = parseInt(this.getAttribute('data-mes'));
@@ -497,6 +605,9 @@ function carregarMesesArquivados() {
             
             document.getElementById('mensagem-confirmar').textContent = 
                 `Tem certeza que deseja restaurar o mês de ${obterNomeMes(mes)} de ${ano}?`;
+            
+            document.getElementById('modal-confirmar').querySelector('.modal-icon i').className = 'fas fa-undo';
+            document.getElementById('modal-confirmar').querySelector('.modal-icon i').style.color = 'var(--primary-color)';
             
             document.getElementById('btn-confirmar-sim').onclick = function() {
                 if (restaurarMesArquivado(mes, ano)) {
@@ -521,6 +632,9 @@ function carregarMesesArquivados() {
         btn.addEventListener('click', function() {
             const mes = parseInt(this.getAttribute('data-mes'));
             const ano = parseInt(this.getAttribute('data-ano'));
+            
+            // Atualiza o título do período
+            document.getElementById('periodo-display').textContent = `${obterNomeMes(mes)} de ${ano} (Arquivado)`;
             
             // Carrega os dados deste mês arquivado
             const despesas = obterDespesasMesArquivado(mes, ano);
@@ -558,8 +672,19 @@ function carregarMesesArquivados() {
             document.getElementById('valor-total-atrasado').textContent = 
                 formatarMoeda(totais.atrasado).replace('R$', '').trim();
             
-            // Muda para a tab de despesas
-            document.querySelector('.tab-btn[data-tab="despesas-tab"]').click();
+            // Atualiza os gráficos
+            updateDashboardCharts(despesas);
+            
+            // Muda para o dashboard
+            document.querySelectorAll('.sidebar-nav li').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector('.sidebar-nav li:first-child').classList.add('active');
+            
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('dashboard-section').classList.add('active');
             
             mostrarNotificacao(`Visualizando dados arquivados de ${obterNomeMes(mes)} de ${ano}.`);
         });
@@ -610,4 +735,59 @@ function aplicarFiltros() {
     renderizarDespesas(despesasFiltradas);
     
     mostrarNotificacao("Filtros aplicados com sucesso.");
+}
+
+function initializeAppForUser(userEmail) {
+    initDatabase().then(success => {
+        if (success) {
+            // Detectar se é dispositivo móvel para ajustar o sidebar
+            if (window.innerWidth <= 768) {
+                document.body.classList.add('sidebar-collapsed');
+                sidebarCollapsed = true;
+            }
+            
+            const dataAtual = new Date();
+            mesAtual = dataAtual.getMonth() + 1; 
+            anoAtual = dataAtual.getFullYear();
+            preencherSelectAnos();
+            mesSelect.value = mesAtual;
+            anoSelect.value = anoAtual;
+            
+            // Carregar dados
+            carregarDadosPeriodo(mesAtual, anoAtual);
+            carregarMesesArquivados();
+        }
+    });
+}
+
+// Mostrar notificação atualizada
+function mostrarNotificacao(mensagem, tipo = 'success') {
+    const notificacao = document.getElementById('notificacao');
+    const mensagemEl = document.getElementById('mensagem-notificacao');
+    const iconEl = document.querySelector('.notificacao-icon i');
+    
+    mensagemEl.textContent = mensagem;
+    
+    // Configura o ícone e cor baseado no tipo
+    if (tipo === 'error') {
+        notificacao.style.borderLeftColor = 'var(--danger-color)';
+        iconEl.className = 'fas fa-times-circle';
+        iconEl.style.color = 'var(--danger-color)';
+    } else if (tipo === 'warning') {
+        notificacao.style.borderLeftColor = 'var(--warning-color)';
+        iconEl.className = 'fas fa-exclamation-circle';
+        iconEl.style.color = 'var(--warning-color)';
+    } else {
+        notificacao.style.borderLeftColor = 'var(--success-color)';
+        iconEl.className = 'fas fa-check-circle';
+        iconEl.style.color = 'var(--success-color)';
+    }
+    
+    // Mostra a notificação
+    notificacao.classList.add('show');
+    
+    // Oculta depois de 3 segundos
+    setTimeout(() => {
+        notificacao.classList.remove('show');
+    }, 3000);
 }

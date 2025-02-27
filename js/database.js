@@ -13,9 +13,9 @@ function hashUserEmail(email) {
     return Math.abs(hash).toString(36);
 }
 
-// Inicializa o banco de dados SQLite
 async function initDatabase() {
     try {
+        // Initialize SQL.js
         const sqlPromise = initSqlJs({
             locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
         });
@@ -32,26 +32,32 @@ async function initDatabase() {
         // Database storage key with user prefix
         const dbKey = userPrefix + 'financeDB';
         
-        // Verifica se existe um banco de dados salvo no localStorage
+        // Check for existing database in localStorage
         const savedDB = localStorage.getItem(dbKey);
         
         if (savedDB) {
-            // Restaura o banco de dados do localStorage
+            // Restore database from localStorage
             const dbData = new Uint8Array(JSON.parse(savedDB));
             db = new SQL.Database(dbData);
         } else {
-            // Cria um novo banco de dados
+            // Create new database
             db = new SQL.Database();
             createTables();
         }
         
+        console.log('Database initialized successfully');
         return true;
     } catch (error) {
-        console.error("Erro ao inicializar o banco de dados:", error);
-        mostrarNotificacao("Erro ao carregar o banco de dados. Verifique o console para mais detalhes.", "error");
+        console.error("Error initializing database:", error);
+        mostrarNotificacao("Erro ao inicializar o banco de dados. Tente novamente.", "error");
         return false;
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    // No automatic initialization here
+    // Database will be initialized after successful login via initializeAppForUser
+});
 
 // Salva o banco de dados no localStorage
 function saveDatabase() {
@@ -68,40 +74,55 @@ function saveDatabase() {
 
 // Cria as tabelas necessárias no banco de dados
 function createTables() {
-    db.run(`
-        CREATE TABLE IF NOT EXISTS despesas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            descricao TEXT NOT NULL,
-            categoria TEXT NOT NULL,
-            tipo TEXT NOT NULL,
-            valor REAL NOT NULL,
-            data_vencimento TEXT NOT NULL,
-            status TEXT NOT NULL,
-            data_pagamento TEXT,
-            observacoes TEXT,
-            mes INTEGER NOT NULL,
-            ano INTEGER NOT NULL,
-            arquivado INTEGER DEFAULT 0,
-            data_criacao TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-    `);
-    
-    db.run(`
-        CREATE TABLE IF NOT EXISTS meses_arquivados (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            mes INTEGER NOT NULL,
-            ano INTEGER NOT NULL,
-            total REAL NOT NULL,
-            quantidade_despesas INTEGER NOT NULL,
-            data_arquivamento TEXT DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(mes, ano)
-        )
-    `);
-    
-    saveDatabase();
+    try {
+        db.run(`
+            CREATE TABLE IF NOT EXISTS despesas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                descricao TEXT NOT NULL,
+                categoria TEXT NOT NULL,
+                tipo TEXT NOT NULL,
+                valor REAL NOT NULL,
+                data_vencimento TEXT NOT NULL,
+                status TEXT NOT NULL,
+                data_pagamento TEXT,
+                observacoes TEXT,
+                mes INTEGER NOT NULL,
+                ano INTEGER NOT NULL,
+                arquivado INTEGER DEFAULT 0,
+                data_criacao TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
+        db.run(`
+            CREATE TABLE IF NOT EXISTS meses_arquivados (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                mes INTEGER NOT NULL,
+                ano INTEGER NOT NULL,
+                total REAL NOT NULL,
+                quantidade_despesas INTEGER NOT NULL,
+                data_arquivamento TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(mes, ano)
+            )
+        `);
+        
+        db.run(`
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                senha TEXT NOT NULL,
+                aprovado INTEGER DEFAULT 0,
+                data_criacao TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
+        saveDatabase();
+        return true;
+    } catch (error) {
+        console.error("Erro ao criar tabelas:", error);
+        return false;
+    }
 }
-
-// ===== FUNÇÕES PARA MANIPULAÇÃO DE DESPESAS =====
 
 // Adiciona uma nova despesa
 function adicionarDespesa(despesa) {
@@ -272,8 +293,6 @@ function obterDespesaPorId(id) {
     }
 }
 
-// ===== FUNÇÕES PARA ARQUIVAMENTO DE MESES =====
-
 // Arquiva um mês
 function arquivarMes(mes, ano) {
     try {
@@ -327,12 +346,25 @@ function arquivarMes(mes, ano) {
 // Obtém todos os meses arquivados
 function obterMesesArquivados() {
     try {
+        // Add validation to ensure db is initialized
+        if (!db) {
+            console.error("Database not initialized");
+            return [];
+        }
+
         const result = db.exec(`
-            SELECT * FROM meses_arquivados
+            SELECT 
+                id,
+                mes,
+                ano, 
+                total,
+                quantidade_despesas,
+                data_arquivamento
+            FROM meses_arquivados 
             ORDER BY ano DESC, mes DESC
         `);
         
-        if (result.length === 0) {
+        if (!result || result.length === 0) {
             return [];
         }
         
@@ -402,8 +434,6 @@ function obterDespesasMesArquivado(mes, ano) {
     }
 }
 
-// ===== FUNÇÕES PARA ESTATÍSTICAS =====
-
 // Obtém os totais para o dashboard
 function obterTotaisMes(mes, ano) {
     try {
@@ -448,5 +478,70 @@ function obterTotaisMes(mes, ano) {
             pendente: 0,
             atrasado: 0
         };
+    }
+}
+
+// Add these new functions for user management
+function adicionarUsuario(usuario) {
+    try {
+        const stmt = db.prepare(`
+            INSERT INTO usuarios (nome, email, senha, aprovado)
+            VALUES (?, ?, ?, ?)
+        `);
+        
+        stmt.run([
+            usuario.nome,
+            usuario.email,
+            usuario.senha,
+            usuario.aprovado ? 1 : 0
+        ]);
+        
+        stmt.free();
+        saveDatabase();
+        return true;
+    } catch (error) {
+        console.error("Erro ao adicionar usuário:", error);
+        return false;
+    }
+}
+
+function obterUsuarioPorEmail(email) {
+    try {
+        const result = db.exec(`
+            SELECT * FROM usuarios WHERE email = ?
+        `, [email]);
+        
+        if (result.length === 0 || result[0].values.length === 0) {
+            return null;
+        }
+        
+        const columns = result[0].columns;
+        const values = result[0].values[0];
+        
+        const usuario = {};
+        columns.forEach((column, index) => {
+            usuario[column] = values[index];
+        });
+        
+        return usuario;
+    } catch (error) {
+        console.error("Erro ao obter usuário:", error);
+        return null;
+    }
+}
+
+function atualizarAprovacaoUsuario(email, aprovado) {
+    try {
+        db.run(`
+            UPDATE usuarios 
+            SET aprovado = ? 
+            WHERE email = ?
+        `, [aprovado ? 1 : 0, email]);
+        
+        saveDatabase();
+        return true;
+    } catch (error) {
+        console.error("Erro ao atualizar aprovação do usuário:", error);
+        return false;
     }
 }
